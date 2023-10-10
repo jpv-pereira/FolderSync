@@ -1,5 +1,0 @@
-{
-	"SOURCE_DIR": "C:\\Users\\Pedro\\Desktop\\SourceControl\\Source",
-	"TARGET_DIR": "C:\\Users\\Pedro\\Desktop\\SourceControl\\Target",
-	"Sync_sec": 20
-}
