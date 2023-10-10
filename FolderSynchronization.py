@@ -2,15 +2,33 @@ import hashlib
 import os
 import shutil
 from datetime import datetime
+import threading
+import json
 
 SOURCE_DIR = ""
 TARGET_DIR = ""
+SYNC_TIME = 0
+
+def load_config():
+    global SOURCE_DIR, TARGET_DIR, SYNC_TIME
+
+    configFile = open('config.json')
+    config = json.load(configFile)
+
+    if not config['SOURCE_DIR'] or not config['TARGET_DIR'] or config['Sync_sec'] <= 0:
+        print("Please configure config.json")
+        exit(1)
+
+    SOURCE_DIR = config['SOURCE_DIR']
+    TARGET_DIR = config['TARGET_DIR']
+    SYNC_TIME = config['Sync_sec']
+    configFile.close()
+
 
 def main():
-    global SOURCE_DIR, TARGET_DIR
-
-    SOURCE_DIR = input("Enter the source directory: ")
-    TARGET_DIR = input("Enter the target directory: ")
+    # Repeat main every X seconds
+    thread = threading.Timer(SYNC_TIME, main)
+    thread.start()
 
     sourceFiles = os.listdir(SOURCE_DIR)
     targetFiles = os.listdir(TARGET_DIR)
@@ -28,6 +46,7 @@ def main():
     compare_md5_hash(checkMD5Files, replaceFiles, copyFiles)
 
     delete_and_copy_files(replaceFiles, copyFiles)
+
 
 def get_branching_folder():
     return 0
@@ -75,8 +94,9 @@ def get_md5_hash(filename):
     with open(filename, "rb") as file:
         bytes = file.read()
         md5 = hashlib.md5(bytes).hexdigest()
-        #print(filename + ": " + md5)
+        # print(filename + ": " + md5)
         return md5
+
 
 def log(str):
     current_time = datetime.now().strftime("%H:%M:%S")
@@ -84,4 +104,5 @@ def log(str):
 
 
 if __name__ == "__main__":
+    load_config()
     main()
