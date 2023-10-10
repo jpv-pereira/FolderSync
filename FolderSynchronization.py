@@ -1,27 +1,31 @@
 import hashlib
 import os
 import shutil
-from datetime import datetime
 import threading
 import json
+from log import FileLog
 
 SOURCE_DIR = ""
 TARGET_DIR = ""
 SYNC_TIME = 0
+FileLog: FileLog
 
 def load_config():
-    global SOURCE_DIR, TARGET_DIR, SYNC_TIME
+    global SOURCE_DIR, TARGET_DIR, SYNC_TIME, FileLog
 
     configFile = open('config.json')
     config = json.load(configFile)
 
-    if not config['SOURCE_DIR'] or not config['TARGET_DIR'] or config['Sync_sec'] <= 0:
+    if not config['SOURCE_DIR'] or not config['TARGET_DIR'] or not config['LOG_DIR'] or config['Sync_sec'] <= 0:
         print("Please configure config.json")
         exit(1)
 
     SOURCE_DIR = config['SOURCE_DIR']
     TARGET_DIR = config['TARGET_DIR']
+    LOG_DIR = config['LOG_DIR']
+    FileLog = FileLog(LOG_DIR)
     SYNC_TIME = config['Sync_sec']
+
     configFile.close()
 
 
@@ -55,13 +59,13 @@ def get_branching_folder():
 def compare_files(sourceFiles, targetFiles, checkMD5Files, copyFiles):
     for file in sourceFiles:
         if file not in targetFiles:
-            log(file + ": set to copy (does not exist in target files)")
+            FileLog.log(file + ": set to copy (does not exist in target files)")
             copyFiles.append(file)
         else:
-            log(file + ": set to compare MD5 hash.")
+            FileLog.log(file + ": set to compare MD5 hash.")
             checkMD5Files.append(file)
     if not checkMD5Files:
-        log("No files to check for md5")
+        FileLog.log("No files to check for md5")
 
 
 def compare_md5_hash(checkMD5Files, replaceFiles, copyfiles):
@@ -71,23 +75,23 @@ def compare_md5_hash(checkMD5Files, replaceFiles, copyfiles):
         sourceMD5 = get_md5_hash(os.path.join(SOURCE_DIR, file))
         checkMD5 = get_md5_hash(os.path.join(TARGET_DIR, file))
         if sourceMD5 != checkMD5:
-            log("MD5 mismatch, file set to update")
+            FileLog.log("MD5 mismatch, file set to update")
             replaceFiles.append(file)
             allFilesMatch = False
 
     if allFilesMatch and not copyfiles:
-        log("All files match")
+        FileLog.log("All files match")
 
 
 def delete_and_copy_files(replaceFiles, copyFiles):
     for file in replaceFiles:
         os.remove(os.path.join(TARGET_DIR, file))
-        log("removed " + file)
+        FileLog.log("removed " + file)
         copyFiles.append(file)
 
     for file in copyFiles:
         shutil.copy(os.path.join(SOURCE_DIR, file), os.path.join(TARGET_DIR, file))
-        log('copied file "' + file + '" to target folder')
+        FileLog.log('copied file "' + file + '" to target folder')
 
 
 def get_md5_hash(filename):
@@ -96,11 +100,6 @@ def get_md5_hash(filename):
         md5 = hashlib.md5(bytes).hexdigest()
         # print(filename + ": " + md5)
         return md5
-
-
-def log(str):
-    current_time = datetime.now().strftime("%H:%M:%S")
-    print(current_time + ": " + str)
 
 
 if __name__ == "__main__":

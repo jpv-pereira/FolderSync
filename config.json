@@ -1,5 +1,6 @@
 {
-	"SOURCE_DIR": "",
-	"TARGET_DIR": "",
+	"SOURCE_DIR": "C:\\Users\\Pedro\\Desktop\\SourceControl\\Source",
+	"TARGET_DIR": "C:\\Users\\Pedro\\Desktop\\SourceControl\\Target",
+	"LOG_DIR": "C:\\Users\\Pedro\\Desktop\\SourceControl",
 	"Sync_sec": 20
 }
