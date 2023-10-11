@@ -52,10 +52,6 @@ def main():
     delete_and_copy_files(replaceFiles, copyFiles)
 
 
-def get_branching_folder():
-    return 0
-
-
 def compare_files(sourceFiles, targetFiles, checkMD5Files, copyFiles):
     for file in sourceFiles:
         if file not in targetFiles:
